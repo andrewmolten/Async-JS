@@ -123,7 +123,11 @@ const renderError = function (msg) {
 
 const getCountryData = function (country) {
   fetch(`https://restcountries.com/v3.1/name/${country}`)
-    .then(response => response.json())
+    .then(response => {
+      console.log(response);
+      if (!response.ok) throw new Error(`Country not found ${response.status}`);
+      return response.json();
+    })
     .then(data => renderCountry(data[0]));
 };
 
@@ -156,5 +160,7 @@ const getCountryAndNeighbourData = function (country) {
 };
 
 btn.addEventListener('click', function () {
-  getCountryAndNeighbourData('germany');
+  getCountryAndNeighbourData('Germany');
 });
+
+getCountryAndNeighbourData('jndfu');
