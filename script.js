@@ -208,4 +208,52 @@ btn.addEventListener('click', function () {
   getCountryAndNeighbourData('Germany');
 });
 
-getCountryAndNeighbourData('Australia');
+// getCountryAndNeighbourData('Australia');
+
+//////////////////////////////////////
+////////// CODING CHALLENGE //////////
+//////////////////////////////////////
+
+const whereAmI = function (lat, lng) {
+  //authcode = 238776515346848385688x36329
+  fetch(
+    `https://geocode.xyz/${lat},${lng}?geoit=json&auth=238776515346848385688x36329`
+  )
+    .then(response => {
+      if (!response.ok) throw new Error(`Problem with geocoding ${res.status}`);
+      return response.json();
+    })
+    .then(data => {
+      const city = data.city;
+      const country = data.country;
+      if (!city || !country) throw new Error('Could not find your location');
+
+      console.log(`You are in ${city}, ${country}`);
+
+      getJSON(
+        `https://restcountries.com/v3.1/name/${country}`,
+        'Country not found'
+      )
+        .then(data => {
+          renderCountry(data[0]);
+
+          const neighbour = data[0].borders?.[0];
+          if (!neighbour) throw new Error('No neighbour found!');
+
+          // Country 2
+          return getJSON(
+            `https://restcountries.com/v3.1/alpha/${neighbour}`,
+            'Country not found'
+          );
+        })
+        .then(data => renderCountry(data[0], 'neighbour'));
+    })
+    .catch(err => console.log(`${err.message} Something went wrong`))
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    });
+};
+
+whereAmI(52.508, 13.381);
+// whereAmI(19.037, 72.873);
+// whereAmI(-33.933, 18.474);
