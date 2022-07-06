@@ -204,9 +204,9 @@ const getCountryAndNeighbourData = function (country) {
     });
 };
 
-btn.addEventListener('click', function () {
-  getCountryAndNeighbourData('Germany');
-});
+// btn.addEventListener('click', function () {
+//   getCountryAndNeighbourData('Germany');
+// });
 
 // getCountryAndNeighbourData('Australia');
 
@@ -272,6 +272,7 @@ Promise.resolve('Resolved promise 2').then(res => {
 console.log('Test End');
 */
 
+/*
 const lotteryPromise = new Promise(function (resolve, reject) {
   console.log('Lottery draw in progress🔮');
   setTimeout(function () {
@@ -307,3 +308,69 @@ wait(1)
 
 Promise.resolve('abc').then(x => console.log(x));
 Promise.reject(new Error('Problem')).catch(x => console.error(x));
+*/
+
+// Promiifying geolocation API
+
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    // navigator.geolocation.getCurrentPosition(
+    //   position => resolve(position),
+    //   err => reject(err)
+    // );
+    // Or can be written the same way:
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+getPosition().then(pos => console.log(pos));
+
+const whereAmI = function (lat, lng) {
+  getPosition()
+    .then(pos => {
+      // Destructure lat and lng
+      const { latitude: lat, longitude: lng } = pos.coords;
+
+      return fetch(
+        `https://geocode.xyz/${lat},${lng}?geoit=json&auth=238776515346848385688x36329`
+      );
+    })
+
+    //authcode = 238776515346848385688x36329
+
+    .then(response => {
+      if (!response.ok) throw new Error(`Problem with geocoding ${res.status}`);
+      return response.json();
+    })
+    .then(data => {
+      const city = data.city;
+      const country = data.country;
+      if (!city || !country) throw new Error('Could not find your location');
+
+      console.log(`You are in ${city}, ${country}`);
+
+      getJSON(
+        `https://restcountries.com/v3.1/name/${country}`,
+        'Country not found'
+      )
+        .then(data => {
+          renderCountry(data[0]);
+
+          const neighbour = data[0].borders?.[0];
+          if (!neighbour) throw new Error('No neighbour found!');
+
+          // Country 2
+          return getJSON(
+            `https://restcountries.com/v3.1/alpha/${neighbour}`,
+            'Country not found'
+          );
+        })
+        .then(data => renderCountry(data[0], 'neighbour'));
+    })
+    .catch(err => console.log(`${err.message} Something went wrong`))
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    });
+};
+
+btn.addEventListener('click', whereAmI);
