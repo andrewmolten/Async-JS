@@ -287,14 +287,14 @@ const lotteryPromise = new Promise(function (resolve, reject) {
 lotteryPromise
   .then(resolvedValue => console.log(resolvedValue))
   .catch(err => console.log(err));
-
+*/
 //Promisifying setTimeout
 const wait = function (seconds) {
   return new Promise(function (resolve) {
     setTimeout(resolve, seconds * 1000);
   });
 };
-
+/*
 wait(1)
   .then(() => {
     console.log('1 second passed');
@@ -412,14 +412,42 @@ image path. Set the network speed to “Fast 3G” in the dev tools Network tab,
 otherwise images load too fast
 GOOD LUCK �*/
 
-btn.style.opacity = 0;
+//btn.style.opacity = 0;
+
+const imgContainer = document.querySelector('.images');
 
 const createImage = function (imgPath) {
-  return new Promise(function () {
+  return new Promise(function (resolve, reject) {
     const image = document.createElement('img');
     image.src = imgPath;
-    image => document.querySelector('.images').appendChild(image);
+    image.addEventListener('load', function () {
+      imgContainer.append(image);
+      resolve(image);
+    });
+    image.addEventListener('error', function () {
+      reject(new Error('Image not found'));
+    });
   });
 };
 
-createImage('img/img-1.jpg');
+let currentImage;
+
+createImage('img/img-1.jpg')
+  .then(img => {
+    currentImage = img;
+    console.log(`Image 1 loaded`);
+    return wait(2);
+  })
+  .then(() => {
+    currentImage.style.display = 'none';
+    return createImage('img/img-2.jpg');
+  })
+  .then(img => {
+    currentImage = img;
+    console.log(`Image 2 loaded`);
+    return wait(2);
+  })
+  .then(() => {
+    currentImage.style.display = 'none';
+  })
+  .catch(err => console.log(`${err.message} Something went wrong`));
