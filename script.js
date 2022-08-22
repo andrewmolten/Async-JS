@@ -413,7 +413,7 @@ otherwise images load too fast
 GOOD LUCK �*/
 
 //btn.style.opacity = 0;
-
+/*
 const imgContainer = document.querySelector('.images');
 
 const createImage = function (imgPath) {
@@ -451,3 +451,34 @@ createImage('img/img-1.jpg')
     currentImage.style.display = 'none';
   })
   .catch(err => console.log(`${err.message} Something went wrong`));
+*/
+
+const getPosition2 = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+const whereAmI2 = async function (country) {
+  // Geolocation
+  const pos = await getPosition2();
+  const { latitude: lat, longitude: lng } = pos.coords;
+
+  // Revers geocoding
+  const resGeo = await fetch(
+    `https://geocode.xyz/${lat},${lng}?geoit=json&auth=238776515346848385688x36329`
+  );
+  const dataGeo = await resGeo.json();
+  console.log(dataGeo);
+
+  // Country date
+  const res = await fetch(
+    `https://restcountries.com/v3.1/name/${dataGeo.country}`
+  );
+  const data = await res.json();
+  console.log(data);
+  renderCountry(data[0]);
+  countriesContainer.style.opacity = 1;
+};
+whereAmI2('New Zealand');
+console.log('First');
