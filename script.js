@@ -493,7 +493,7 @@ const whereAmI2 = async function (country) {
   }
 };
 // whereAmI2('New Zealand');
-console.log('1: Will get location');
+// console.log('1: Will get location');
 // const city = whereAmI2();
 // console.log(city);
 
@@ -511,12 +511,186 @@ console.log('1: Will get location');
 //   .catch(err => console.error(`2: ${err.message} 💥`))
 //   .finally(() => console.log('3: Finished getting location'));
 
-(async function () {
+// Really always need to wrap an async function in a try catch block
+// (async function () {
+//   try {
+//     const city = await whereAmI2();
+//     console.log(`2: ${city}`);
+//   } catch (err) {
+//     console.log(`2: ${err.message} 💥`);
+//   }
+//   console.log('3: Finished getting location');
+// })();
+
+//Run promises in parallel
+/*
+const get3Countries = async function (c1, c2, c3) {
   try {
-    const city = await whereAmI2();
-    console.log(`2: ${city}`);
+    // const [data1] = await getJSON(`https://restcountries.com/v3.1/name/${c1}`);
+    // const [data2] = await getJSON(`https://restcountries.com/v3.1/name/${c2}`);
+    // const [data3] = await getJSON(`https://restcountries.com/v3.1/name/${c3}`);
+
+    // If you are running multiple promises that don't depend on each other you, run them in parallel like this.
+    // If one of these promises rejects then they will all reject
+    const data = await Promise.all([
+      getJSON(`https://restcountries.com/v3.1/name/${c1}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c2}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c3}`),
+    ]);
+
+    console.log(data.map(d => d[0].capital));
   } catch (err) {
-    console.log(`2: ${err.message} 💥`);
+    console.log(err);
   }
-  console.log('3: Finished getting location');
+};
+
+get3Countries('portugal', 'canada', 'tanzania');
+*/
+/*
+
+// Promise Combinators
+
+// Promise.race
+// Useful to prevent against neverending promises or very long promises
+(async function () {
+  const res = await Promise.race([
+    getJSON(`https://restcountries.com/v3.1/name/${`Italy`}`),
+    getJSON(`https://restcountries.com/v3.1/name/${`egypt`}`),
+    getJSON(`https://restcountries.com/v3.1/name/${`Mexico`}`),
+  ]);
+  console.log(res[0]);
 })();
+
+const timeout = function (sec) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error('Request took too long!'));
+    }, sec * 1000);
+  });
+};
+
+Promise.race([
+  getJSON(`https://restcountries.com/v3.1/name/${`Tanzania`}`),
+  timeout(0.65),
+])
+  .then(res => console.log(res[0]))
+  .catch(err => console.log(err));
+
+// Promise.allSettled
+// Will never shortcircuit(like Promise.all will)
+Promise.allSettled([
+  Promise.resolve('Success'),
+  Promise.resolve('ERROR'),
+  Promise.resolve('Another Success'),
+]).then(res => console.log(res));
+
+Promise.all([
+  Promise.resolve('Success'),
+  Promise.resolve('ERROR'),
+  Promise.resolve('Another Success'),
+]).then(res => console.log(res));
+
+// Promise.any [ES2021]
+// Very similar to Promise.race except it will ignore rejected promises
+Promise.any([
+  Promise.resolve('Success'),
+  Promise.resolve('ERROR'),
+  Promise.resolve('Another Success'),
+]).then(res => console.log(res));
+*/
+
+/*
+Coding Challenge #3
+Your tasks:
+PART 1
+1. Write an async function 'loadNPause' that recreates Challenge #2, this time
+using async/await (only the part where the promise is consumed, reuse the
+'createImage' function from before)
+2. Compare the two versions, think about the big differences, and see which one
+you like more
+3. Don't forget to test the error handler, and to set the network speed to “Fast 3G”
+in the dev tools Network tab
+PART 2
+1. Create an async function 'loadAll' that receives an array of image paths
+'imgArr'
+2. Use .map to loop over the array, to load all the images with the
+'createImage' function (call the resulting array 'imgs')
+3. Check out the 'imgs' array in the console! Is it like you expected?
+4. Use a promise combinator function to actually get the images from the array �
+5. Add the 'parallel' class to all the images (it has some CSS styles)
+Test data Part 2: ['img/img-1.jpg', 'img/img-2.jpg', 'img/img3.jpg']. To test, turn off the 'loadNPause' function
+GOOD LUCK �
+*/
+btn.style.opacity = 0;
+const imgContainer = document.querySelector('.images');
+
+const createImage = function (imgPath) {
+  return new Promise(function (resolve, reject) {
+    const image = document.createElement('img');
+    image.src = imgPath;
+    image.addEventListener('load', function () {
+      imgContainer.append(image);
+      resolve(image);
+    });
+    image.addEventListener('error', function () {
+      reject(new Error('Image not found'));
+    });
+  });
+};
+
+let currentImage;
+
+// createImage('img/img-1.jpg')
+//   .then(img => {
+//     currentImage = img;
+//     console.log(`Image 1 loaded`);
+//     return wait(2);
+//   })
+//   .then(() => {
+//     currentImage.style.display = 'none';
+//     return createImage('img/img-2.jpg');
+//   })
+//   .then(img => {
+//     currentImage = img;
+//     console.log(`Image 2 loaded`);
+//     return wait(2);
+//   })
+//   .then(() => {
+//     currentImage.style.display = 'none';
+//   })
+//   .catch(err => console.log(`${err.message} Something went wrong`));
+
+// PART 1
+const loadNPause = async function () {
+  try {
+    // Load image 1
+    let img = await createImage('img/img-1.jpg');
+    console.log('Image 1 loaded');
+    await wait(2);
+    img.style.display = 'none';
+
+    // Load image 2
+    img = await createImage('img/img-2.jpg');
+    console.log('Image 2 loaded');
+    await wait(2);
+    img.style.display = 'none';
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// loadNPause();
+
+// PART 2
+const loadAll = async function (imgArr) {
+  try {
+    const imgs = imgArr.map(async img => await createImage(img));
+    const imgsEl = await Promise.all(imgs);
+    console.log(imgsEl);
+    imgsEl.forEach(img => img.classList.add('parallel'));
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+loadAll(['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']);
